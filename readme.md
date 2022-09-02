@@ -187,3 +187,5 @@ The rendering function that changes the DOM. I could use React here or Lit-HTML 
 
 
 Check out the index.html for the full example and try it in your browser.
+
+## That's it. Enjoy!
