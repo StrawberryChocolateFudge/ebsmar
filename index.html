@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    .box {
+        width: 100px;
+        height: 100px;
+        border: 1px solid black;
+        margin: 0;
+        padding: 0;
+        cursor: pointer;
+    }
+</style>
+
+<body>
+    <div>
+        <div class="box"></div>
+    </div>
+</body>
+<script>
+    const box = document.getElementsByClassName("box")[0];
+
+
+    //Dispatch an event to trigger something
+    function dispatch(to, detail) {
+        document.body.dispatchEvent(new CustomEvent(to, { detail }));
+    }
+
+    // If using TypeScript declare the following objects as Enums instead!
+    // The events that will be dispatched are either for changing the state or rendering
+    const ListenEvents = { stateChange: "stateChange", render: "render" };
+    // The state change event, used for routing
+    const StateChangeType = { setColor: "setColor" };
+    // The render event, used for routing
+    const RenderType = { renderBoxColor: "renderBoxColor" }
+    // The properties of the state in a const variable for routing in the setStateHook
+    const StateProperties = { color: "color" };
+
+    // The hook inside set state is used for triggering an action on state change, like rendering!
+    const setStateHook = {
+        [StateProperties.color]: function (obj, prop, value) {
+            // Do something on color change...
+            // Use Object.assign to copy the state when passing it as props to the renderer 
+            dispatch_renderBoxColor(Object.assign({}, obj));
+        }
+    }
+
+    // // Initialize the state in a function. 
+    function InitState() {
+
+        // Create a Proxy
+        function createState() {
+            const state = {
+                color: "white"
+            };
+            const stateHandler = {
+                set: function (obj, prop, value) {
+                    obj[prop] = value;
+                    setStateHook[prop](obj, prop, value);
+                }
+            }
+            return new Proxy(state, stateHandler);
+        }
+        // The stateContainer is stored inside InitState, to be accessed only by the event listener.
+
+        const stateContainer = createState();
+
+        // The stateSetter helps route the state change event value to the correct place!         
+        const stateSetter = {
+            [StateChangeType.setColor]: (value) => {
+                stateContainer.color = value;
+            }
+        }
+
+        document.body.addEventListener(ListenEvents.stateChange, function (event) {
+            // We route events based on their type. The StateSetter is used as a switch.
+            const type = event.detail.type;
+            const value = event.detail.value;
+            console.log(`Setting State Type ${type}, Value: ${value}`)
+            stateSetter[type](value);
+        })
+    };
+
+
+    function InitRenderer() {
+        const Render = {
+            [RenderType.renderBoxColor]: async (props) => {
+                // The renderer can use the DOM APIs or even React from here to change the DOM.
+                renderBox(props.color);
+                // The event listeners to DOM elements are also attached during Rendering.
+                boxActions(props)
+            }
+        }
+        document.body.addEventListener(ListenEvents.render, async (e) => {
+            const type = e.detail.type;
+            const props = e.detail.props;
+            console.log(`Rendering Type: ${type}, Props: ${props}`)
+            await Render[type](props);
+        })
+    }
+
+    // When dispatching state change, it is a value we dispatch
+    function dispatch_setColor(value) {
+        dispatch(ListenEvents.stateChange, {
+            type: StateChangeType.setColor,
+            value
+        });
+    }
+    // When rendering we dispatch props!
+    function dispatch_renderBoxColor(props) {
+        dispatch(ListenEvents.render, {
+            type: RenderType.renderBoxColor,
+            props
+        })
+    }
+
+
+    function boxActions(props) {
+        // Select the box via className and dispatch a state change
+        box.onclick = function () {
+            if (props.color === "red") {
+                dispatch_setColor("blue");
+            } else if (props.color === "blue") {
+                dispatch_setColor("red");
+            }
+
+        }
+    }
+
+    function renderBox(color) {
+        box.style.backgroundColor = color;
+    }
+
+
+
+    // Initialize the state and the renderer and run the event listeners
+    InitState();
+    InitRenderer();
+
+
+    // Let's set the box red
+    dispatch_setColor("red")
+</script>
+
+</html>
