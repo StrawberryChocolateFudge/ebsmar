@@ -49,7 +49,8 @@ We will use the built in Browser Events. To create a streamlined experience we w
                 document.body.dispatchEvent(new CustomEvent(to, { detail }));
             }
 
-We will use different Objects to define what Event we are listening to, if state change then what changes in the state etc... If you use Typescript you should use Enums for this, but for now I'm gonna stick to vanilla JS and use objects.
+We will use different Objects to define what Event we are dispatching and how we route them.
+If you use Typescript you should use Enums for this, but for now I'm gonna stick to vanilla JS and use objects.
 
 
 Define what events we can listen to
@@ -64,7 +65,7 @@ The render events have different types depending on what we render
 
         const RenderType = { renderBoxColor: "renderBoxColor" }
             
-State properties define the state objects properties, used for easy routing
+State properties define the state objects properties, used for easy accessing an object based on what property of the state changes!
 
         const StateProperties = { color: "color" };
 
