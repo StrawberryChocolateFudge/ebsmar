@@ -1,4 +1,6 @@
-# Event Based State Management And Rendering
+# EBSMAR
+
+## Event Based State Management And Rendering
 
 During front end development we often need to work with different rendering and state management solutions like React with Redux. However sometimes more light weight solutions are required in vanilla javascript and we don't want to use frameworks.
 
